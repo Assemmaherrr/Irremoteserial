@@ -30,6 +30,7 @@ jobs:
 
       - name: Build project for ESP32-C3
         run: |
+          . "$IDF_PATH/export.sh"
           idf.py set-target esp32c3
           idf.py reconfigure
           idf.py build
