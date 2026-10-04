@@ -49,27 +49,37 @@ static decode_results results;
 
 static int ble_gap_event_handler(ble_gap_event *event, void *arg);
 static void ble_advertise(void);
+
+// Minimal access callback required by NimBLE for every characteristic.
+// Even a notify-only characteristic must have a non-null callback.
+static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
+                              struct ble_gatt_access_ctxt *ctxt, void *arg) {
+  return 0;
+}
+
+// Positional initializers (safe, portable C++).
+// Fields of ble_gatt_chr_def: uuid, access_cb, flags, val_handle, arg.
 static ble_gatt_chr_def nus_characteristics[] = {
     {
-        .uuid = &kNusTxUuid.u,
-        .access_cb = nullptr,
-        .flags = BLE_GATT_CHR_F_NOTIFY,
-        .val_handle = &nus_tx_value_handle,
+        &kNusTxUuid.u,          // uuid
+        gatt_svr_access_cb,     // access_cb
+        BLE_GATT_CHR_F_NOTIFY,  // flags
+        &nus_tx_value_handle,   // val_handle
+        nullptr                 // arg
     },
-    {
-        0,
-    },
+    { 0 }  // terminator
 };
 
+// Positional initializers for the service table.
+// Fields of ble_gatt_svc_def: type, uuid, includes, characteristics.
 static const ble_gatt_svc_def gatt_svcs[] = {
     {
-        .type = BLE_GATT_SVC_TYPE_PRIMARY,
-        .uuid = &kNusServiceUuid.u,
-        .characteristics = nus_characteristics,
+        BLE_GATT_SVC_TYPE_PRIMARY,  // type
+        &kNusServiceUuid.u,         // uuid
+        nullptr,                    // includes
+        nus_characteristics         // characteristics
     },
-    {
-        0,
-    },
+    { 0 }  // terminator
 };
 
 static void ble_send_text(const char *text, size_t length) {
@@ -143,7 +153,7 @@ static void ir_receiver_task(void *arg) {
 static void ble_on_sync(void) {
   uint8_t addr_val[6] = {0};
   uint8_t addr_type = 0;
-  
+
   // Infer the address type (public or random)
   int rc = ble_hs_id_infer_auto(0, &addr_type);
   if (rc != 0) {
@@ -231,7 +241,7 @@ static void ble_init(void) {
     rc = nvs_flash_init();
   }
   ESP_ERROR_CHECK(rc);
-  
+
   // In ESP-IDF v5.x, nimble_port_init() handles controller,
   // HCI, and host stack initialization internally.
   rc = nimble_port_init();
