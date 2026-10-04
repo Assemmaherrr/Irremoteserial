@@ -25,7 +25,7 @@ static const char *TAG = "c3_ir_analyzer";
 static constexpr char kDeviceName[] = "C3-IR-ANALYZER";
 static constexpr uint16_t kRecvPin = 10;
 static constexpr uint16_t kCaptureBufferSize = 1024;
-static constexpr uint8_t kTimeoutMs = 50;
+static constexpr uint8_t kIrRecvTimeoutMs = 50;
 static constexpr uint16_t kMinUnknownSize = 12;
 static constexpr size_t kBleChunkSize = 200;
 static constexpr size_t kMessageBufferSize = 2048;
@@ -41,7 +41,7 @@ static std::atomic<bool> ble_connected{false};
 static std::atomic<uint16_t> ble_conn_handle{BLE_HS_CONN_HANDLE_NONE};
 static uint16_t nus_tx_value_handle = 0;
 
-static IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeoutMs, true);
+static IRrecv irrecv(kRecvPin, kCaptureBufferSize, kIrRecvTimeoutMs, true);
 static decode_results results;
 
 #ifndef ble_gattc_notify_custom
@@ -225,7 +225,7 @@ static void ble_init(void) {
   }
   ESP_ERROR_CHECK(rc);
 
-  ESP_ERROR_CHECK(esp_nimble_hci_and_controller_init());
+  ESP_ERROR_CHECK(esp_nimble_hci_init());
   nimble_port_init();
 
   ble_hs_cfg.sync_cb = ble_on_sync;
