@@ -5,7 +5,6 @@
 
 #include "driver/gpio.h"
 #include "esp_log.h"
-#include "esp_nimble_hci.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "host/ble_hs.h"
@@ -143,15 +142,23 @@ static void ir_receiver_task(void *arg) {
 
 static void ble_on_sync(void) {
   uint8_t addr_val[6] = {0};
-  int rc = ble_hs_id_infer_auto(0, nullptr);
+  uint8_t addr_type = 0;
+  
+  // Infer the address type (public or random)
+  int rc = ble_hs_id_infer_auto(0, &addr_type);
   if (rc != 0) {
     ESP_LOGE(TAG, "ble_hs_id_infer_auto failed: rc=%d", rc);
     return;
   }
 
-  rc = ble_hs_id_copy_addr(BLE_ADDR_PUBLIC, addr_val, nullptr);
+  // Copy the address using the inferred type
+  rc = ble_hs_id_copy_addr(addr_type, addr_val, nullptr);
   if (rc != 0) {
     ESP_LOGW(TAG, "ble_hs_id_copy_addr failed: rc=%d", rc);
+  } else {
+    ESP_LOGI(TAG, "Bluetooth MAC Address: %02X:%02X:%02X:%02X:%02X:%02X",
+             addr_val[0], addr_val[1], addr_val[2],
+             addr_val[3], addr_val[4], addr_val[5]);
   }
 
   ble_advertise();
