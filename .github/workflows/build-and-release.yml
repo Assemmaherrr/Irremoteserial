@@ -49,6 +49,8 @@ jobs:
         run: |
           mkdir -p dist
           cp build/*.bin dist/
+          cp build/bootloader/bootloader.bin dist/ || true
+          cp build/partition_table/partition-table.bin dist/ || true
           cp build/*.elf dist/
           cp build/*.map dist/
 
