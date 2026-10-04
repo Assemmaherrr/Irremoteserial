@@ -57,29 +57,28 @@ static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
   return 0;
 }
 
-// Positional initializers (safe, portable C++).
-// Fields of ble_gatt_chr_def: uuid, access_cb, flags, val_handle, arg.
 static ble_gatt_chr_def nus_characteristics[] = {
     {
-        &kNusTxUuid.u,          // uuid
-        gatt_svr_access_cb,     // access_cb
-        BLE_GATT_CHR_F_NOTIFY,  // flags
-        &nus_tx_value_handle,   // val_handle
-        nullptr                 // arg
+        .uuid = &kNusTxUuid.u,
+        .access_cb = gatt_svr_access_cb,
+        .arg = nullptr,
+        .descriptors = nullptr,
+        .flags = BLE_GATT_CHR_F_NOTIFY,
+        .min_key_size = 0,
+        .val_handle = &nus_tx_value_handle,
+        .cpfd = nullptr,
     },
-    { 0 }  // terminator
+    { 0 },  // terminator
 };
 
-// Positional initializers for the service table.
-// Fields of ble_gatt_svc_def: type, uuid, includes, characteristics.
 static const ble_gatt_svc_def gatt_svcs[] = {
     {
-        BLE_GATT_SVC_TYPE_PRIMARY,  // type
-        &kNusServiceUuid.u,         // uuid
-        nullptr,                    // includes
-        nus_characteristics         // characteristics
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &kNusServiceUuid.u,
+        .includes = nullptr,
+        .characteristics = nus_characteristics,
     },
-    { 0 }  // terminator
+    { 0 },  // terminator
 };
 
 static void ble_send_text(const char *text, size_t length) {
@@ -275,6 +274,6 @@ static void ble_init(void) {
 extern "C" void app_main(void) {
   ble_init();
 
-  xTaskCreatePinnedToCore(ir_receiver_task, "ir_receiver_task", 8192, nullptr, 5,
+  xTaskCreatePinnedToCore(ir_receiver_task, "ir_receiver_task", 12288, nullptr, 5,
                           nullptr, 0);
 }
