@@ -44,7 +44,11 @@ jobs:
           idf.py set-target esp32c3
           idf.py reconfigure
           idf.py build
-
+          
+      - name: Merge binaries
+        run: |
+          . "$IDF_PATH/export.sh"
+          idf.py merge-bin
       - name: Collect build outputs
         run: |
           mkdir -p dist
