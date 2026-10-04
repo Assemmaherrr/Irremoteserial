@@ -224,9 +224,14 @@ static void ble_init(void) {
     rc = nvs_flash_init();
   }
   ESP_ERROR_CHECK(rc);
-
-  ESP_ERROR_CHECK(esp_nimble_hci_init());
-  nimble_port_init();
+  
+  // In ESP-IDF v5.x, nimble_port_init() handles controller,
+  // HCI, and host stack initialization internally.
+  rc = nimble_port_init();
+  if (rc != ESP_OK) {
+    ESP_LOGE(TAG, "nimble_port_init failed: %d", rc);
+    return;
+  }
 
   ble_hs_cfg.sync_cb = ble_on_sync;
   ble_svc_gap_init();
